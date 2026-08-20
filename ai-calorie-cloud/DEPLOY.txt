@@ -1,0 +1,17 @@
+雲端部署最短流程
+
+Vercel：
+1. 把整個資料夾放到 GitHub
+2. Vercel → New Project → Import Git Repository
+3. 不設 Build Command
+4. Deploy
+5. 用產生的 https://...vercel.app 網址開啟
+
+GitHub Pages：
+1. 上傳到 GitHub repository 根目錄
+2. Settings → Pages
+3. Deploy from a branch
+4. main / root
+5. Save
+
+注意：目前飲食紀錄存在各裝置的瀏覽器 localStorage，不會跨裝置同步。

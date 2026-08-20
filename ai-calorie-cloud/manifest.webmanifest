@@ -1,0 +1,19 @@
+{
+  "name": "AI 熱量計算器",
+  "short_name": "熱量計算器",
+  "description": "飲食熱量、營養素、每日飲食指南與食藥署營養資料工具",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

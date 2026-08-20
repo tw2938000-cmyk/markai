@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 熱量計算器｜台灣熱量資料庫內建版</title>
+
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="AI 熱量計算器" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-2: #dbeafe;
+      --success: #059669;
+      --success-bg: #d1fae5;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --shadow: 0 10px 28px rgba(15, 23, 42, .08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      width: min(100%, 1180px);
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #60a5fa);
+      color: white;
+      border-radius: 24px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 46px);
+      letter-spacing: -.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      opacity: .9;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .profile { grid-column: span 5; }
+    .summary { grid-column: span 7; }
+    .history { grid-column: 1 / -1; }
+    .guide { grid-column: 1 / -1; }
+
+    .guide-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .guide-select {
+      min-width: 190px;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .guide-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .guide-item .icon {
+      font-size: 25px;
+      line-height: 1;
+      margin-bottom: 7px;
+    }
+
+    .guide-item .name {
+      min-height: 36px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #374151;
+    }
+
+    .guide-item .amount {
+      font-size: 21px;
+      font-weight: 900;
+      margin-top: 5px;
+      color: #1d4ed8;
+    }
+
+    .guide-item .unit {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .motto-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .motto {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .source-note {
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .source-note a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 19px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin: -7px 0 14px;
+      line-height: 1.5;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input, select, button, textarea {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 11px 12px;
+      outline: none;
+      background: white;
+      color: var(--text);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .18s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-ghost {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+    .btn-full { width: 100%; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fafafa;
+    }
+
+    .metric .k {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .metric .v {
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .progress {
+      height: 14px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .progress > div {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      transition: width .25s ease;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    .manual-entry {
+      grid-column: 1 / -1;
+    }
+
+    .manual-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr repeat(4, .8fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .manual-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .quick-foods {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .quick-food {
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .quick-food:hover {
+      background: #dbeafe;
+    }
+
+    .manual-calc-panel {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fafafa;
+      margin-bottom: 12px;
+    }
+
+    .manual-grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .manual-grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .manual-calc-result {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .manual-calc-result-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #047857;
+      margin-bottom: 4px;
+    }
+
+    .manual-calc-formula {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #047857;
+      line-height: 1.5;
+    }
+
+    .status.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .manual-result-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+
+    .manual-result-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .manual-result-food {
+      font-size: 20px;
+      font-weight: 900;
+      margin-top: 3px;
+    }
+
+    .manual-result-portion {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .manual-calorie-box {
+      text-align: right;
+      color: #1d4ed8;
+      white-space: nowrap;
+    }
+
+    .manual-calorie-box span {
+      font-size: 38px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .manual-calorie-box small {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .nutrient-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .nutrient-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 8px;
+      background: #fafafa;
+      text-align: center;
+    }
+
+    .nutrient-card span {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 28px;
+    }
+
+    .nutrient-card b {
+      font-size: 19px;
+      margin-right: 2px;
+    }
+
+    .nutrient-card small {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .official-data-box {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      border-radius: 16px;
+      padding: 14px;
+      margin: 12px 0 16px;
+    }
+
+    .official-data-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .official-data-title {
+      font-weight: 900;
+      color: #1e40af;
+    }
+
+    .official-data-status {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #475569;
+    }
+
+    .official-data-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .file-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .file-btn input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .source-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 11px;
+      font-weight: 900;
+      margin-top: 6px;
+    }
+
+    .all-nutrients {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .all-nutrients summary {
+      cursor: pointer;
+      padding: 12px 14px;
+      font-weight: 900;
+      background: #fafafa;
+    }
+
+    .all-nutrients-table {
+      overflow-x: auto;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
+    .all-nutrients-table table {
+      min-width: 520px;
+    }
+
+    .all-nutrients-table td,
+    .all-nutrients-table th {
+      padding: 8px 10px;
+    }
+    .mini label { font-size: 11px; color: var(--muted); }
+
+    .totals {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .total-chip {
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .total-chip b {
+      display: block;
+      font-size: 20px;
+      margin-top: 3px;
+    }
+
+    .notice {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--warning-bg);
+      color: #92400e;
+      font-size: 13px;
+      line-height: 1.55;
+      margin-top: 12px;
+    }
+
+    .status {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--success-bg);
+      color: #065f46;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      background: #fafafa;
+    }
+
+    .history-wrap { overflow-x: auto; }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 22px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: var(--primary-2);
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      .profile, .summary { grid-column: 1 / -1; }
+      .metrics, .totals { grid-template-columns: repeat(2, 1fr); }
+      .guide-grid { grid-template-columns: repeat(3, 1fr); }
+      .motto-grid { grid-template-columns: repeat(2, 1fr); }
+      .manual-grid { grid-template-columns: 1fr 1fr; }
+      .manual-grid-3, .manual-grid-2 { grid-template-columns: 1fr; }
+      .nutrient-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .app { padding: 12px; }
+      .hero { padding: 20px; border-radius: 18px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .metrics, .totals { grid-template-columns: 1fr 1fr; }
+      .guide-grid { grid-template-columns: repeat(2, 1fr); }
+      .motto-grid { grid-template-columns: 1fr; }
+      .metric .v { font-size: 18px; }
+      .nutrient-grid { grid-template-columns: repeat(2, 1fr); }
+      .manual-calorie-box span { font-size: 32px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <section class="hero">
+    <span class="pill">正式擴充版</span>
+    <h1>AI 熱量計算器</h1>
+    <p>設定每日熱量目標、手動記錄飲食與份量，並追蹤今天還能吃多少。</p>
+  </section>
+
+  <main class="grid">
+    <section class="card profile">
+      <h2>1. 個人熱量目標</h2>
+      <p class="sub">使用 Mifflin-St Jeor 公式估算 BMR，並依活動量計算 TDEE。</p>
+
+      <div class="form-grid">
+        <div>
+          <label>生理性別</label>
+          <select id="sex">
+            <option value="male">男</option>
+            <option value="female">女</option>
+          </select>
+        </div>
+        <div>
+          <label>年齡</label>
+          <input id="age" type="number" min="14" max="100" value="30">
+        </div>
+        <div>
+          <label>體重（kg）</label>
+          <input id="weight" type="number" min="30" max="300" step="0.1" value="70">
+        </div>
+        <div>
+          <label>身高（cm）</label>
+          <input id="height" type="number" min="120" max="230" value="170">
+        </div>
+        <div>
+          <label>活動量</label>
+          <select id="activity">
+            <option value="1.2">久坐少動</option>
+            <option value="1.375">輕度活動</option>
+            <option value="1.55" selected>中度活動</option>
+            <option value="1.725">高度活動</option>
+            <option value="1.9">非常高度活動</option>
+          </select>
+        </div>
+        <div>
+          <label>目標</label>
+          <select id="goal">
+            <option value="0.85">減脂</option>
+            <option value="1" selected>維持</option>
+            <option value="1.1">增重</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn btn-primary" id="calcBtn">更新目標</button>
+        <button class="btn btn-ghost" id="resetProfile">重設</button>
+      </div>
+    </section>
+
+    <section class="card summary">
+      <h2>2. 今日摘要</h2>
+      <div class="metrics">
+        <div class="metric">
+          <div class="k">BMR</div>
+          <div class="v"><span id="bmr">0</span></div>
+          <div class="k">kcal</div>
+        </div>
+        <div class="metric">
+          <div class="k">TDEE</div>
+          <div class="v"><span id="tdee">0</span></div>
+          <div class="k">kcal</div>
+        </div>
+        <div class="metric">
+          <div class="k">今日目標</div>
+          <div class="v"><span id="target">0</span></div>
+          <div class="k">kcal</div>
+        </div>
+        <div class="metric">
+          <div class="k">剩餘</div>
+          <div class="v"><span id="remaining">0</span></div>
+          <div class="k">kcal</div>
+        </div>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="summary-line">
+        <span>已攝取 <b id="consumed">0</b> kcal</span>
+        <span id="progressText">0%</span>
+      </div>
+
+      <div class="totals">
+        <div class="total-chip">蛋白質<b><span id="dayProtein">0</span> g</b></div>
+        <div class="total-chip">碳水<b><span id="dayCarbs">0</span> g</b></div>
+        <div class="total-chip">脂肪<b><span id="dayFat">0</span> g</b></div>
+        <div class="total-chip">餐數<b><span id="mealCount">0</span></b></div>
+      </div>
+      <div class="totals">
+        <div class="total-chip">膳食纖維<b><span id="dayFiber">0</span> g</b></div>
+        <div class="total-chip">糖<b><span id="daySugar">0</span> g</b></div>
+        <div class="total-chip">鈉<b><span id="daySodium">0</span> mg</b></div>
+        <div class="total-chip">狀態<b>每日累計</b></div>
+      </div>
+    </section>
+
+    <section class="card guide">
+      <div class="guide-head">
+        <div>
+          <h2>3. 國民健康署「每日飲食指南」</h2>
+          <p class="sub" style="margin-bottom:0;">
+            依你的每日目標熱量，自動對照國健署最接近的熱量級距與六大類食物建議量。
+          </p>
+        </div>
+        <div class="guide-select">
+          <label>指南熱量級距</label>
+          <select id="guideCalories">
+            <option value="1200">1,200 大卡</option>
+            <option value="1500">1,500 大卡</option>
+            <option value="1800">1,800 大卡</option>
+            <option value="2000">2,000 大卡</option>
+            <option value="2200">2,200 大卡</option>
+            <option value="2500">2,500 大卡</option>
+            <option value="2700">2,700 大卡</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="guide-grid">
+        <div class="guide-item">
+          <div class="icon">🍚</div>
+          <div class="name">全榖雜糧類</div>
+          <div class="amount" id="guideGrains">—</div>
+          <div class="unit">碗 / 日</div>
+        </div>
+        <div class="guide-item">
+          <div class="icon">🥚</div>
+          <div class="name">豆魚蛋肉類</div>
+          <div class="amount" id="guideProtein">—</div>
+          <div class="unit">份 / 日</div>
+        </div>
+        <div class="guide-item">
+          <div class="icon">🥛</div>
+          <div class="name">乳品類</div>
+          <div class="amount" id="guideDairy">—</div>
+          <div class="unit">杯 / 日</div>
+        </div>
+        <div class="guide-item">
+          <div class="icon">🥬</div>
+          <div class="name">蔬菜類</div>
+          <div class="amount" id="guideVeg">—</div>
+          <div class="unit">份 / 日</div>
+        </div>
+        <div class="guide-item">
+          <div class="icon">🍎</div>
+          <div class="name">水果類</div>
+          <div class="amount" id="guideFruit">—</div>
+          <div class="unit">份 / 日</div>
+        </div>
+        <div class="guide-item">
+          <div class="icon">🥜</div>
+          <div class="name">油脂與堅果種子類</div>
+          <div class="amount" id="guideOil">—</div>
+          <div class="unit">份 / 日</div>
+        </div>
+      </div>
+
+      <div class="motto-grid">
+        <div class="motto">🥛 每天早晚一杯奶</div>
+        <div class="motto">🍎 每餐水果拳頭大</div>
+        <div class="motto">🥬 菜比水果多一點</div>
+        <div class="motto">🍚 飯跟蔬菜一樣多</div>
+        <div class="motto">✋ 豆魚蛋肉一掌心</div>
+        <div class="motto">🥜 堅果種子一茶匙</div>
+      </div>
+
+      <div class="notice">
+        指南份數是均衡飲食的參考，不代表每個人的醫療營養處方。若有糖尿病、腎臟病、孕期、特殊疾病或醫療需求，應依醫師或營養師建議調整。
+      </div>
+
+      <div class="source-note">
+        資料來源：衛生福利部國民健康署
+        <a href="https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=544&pid=728" target="_blank" rel="noopener">「每日飲食建議量」</a>
+        與
+        <a href="https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4687&pid=11677" target="_blank" rel="noopener">「我的餐盤」</a>。
+        本工具以最接近的官方熱量級距做對照。
+      </div>
+    </section>
+
+    <section class="card manual-entry">
+      <h2>4. 手動輸入飲食</h2>
+      <p class="sub">
+        直接輸入食物名稱與份量，例如「白飯 1碗」、「雞胸肉 120g」、「香蕉 1根」，
+        再按一次「開始計算熱量」。本版已內建台灣食藥署食品營養資料與臺大校園餐飲熱量表，可直接離線查詢；需要較新食藥署資料時再使用官方更新功能。
+      </p>
+
+      <div class="official-data-box">
+        <div class="official-data-top">
+          <div>
+            <div class="official-data-title">🇹🇼 台灣食品熱量／營養資料庫</div>
+            <div class="source-chip" id="officialDataChip">正在載入內建台灣資料庫…</div>
+          </div>
+        </div>
+        <div class="official-data-status" id="officialDataStatus">
+          內建台灣食品資料庫載入中；完成後可直接搜尋食藥署食品與臺大餐飲熱量資料，不需另外下載檔案。
+        </div>
+        <div class="official-data-actions">
+          <a class="btn btn-primary" id="downloadTfdaBtn"
+             href="https://data.fda.gov.tw/opendata/exportDataList.do?InfoId=20&logType=5&method=ExportData"
+             target="_blank" rel="noopener"
+             style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+            下載官方新版資料
+          </a>
+          <label class="btn btn-primary file-btn">
+            匯入官方 JSON / ZIP
+            <input id="tfdaFileInput" type="file" accept=".json,.zip,application/json,application/zip">
+          </label>
+          <button class="btn btn-ghost" id="loadTfdaOnlineBtn" type="button">線上更新官方資料</button>
+        </div>
+        <div class="official-data-status" id="officialImportInfo" style="margin-top:8px;">
+          內建資料會自動載入；只有需要更新資料時才需要下載或匯入。
+        </div>
+        <div class="official-data-status" style="margin-top:8px;">
+          資料來源：衛生福利部食品藥物管理署「食品營養成分資料集」。
+          <a href="https://data.gov.tw/dataset/8543" target="_blank" rel="noopener">查看政府資料集</a><br>
+          另收錄國立臺灣大學膳食協調委員會「熱量表【盤菜、自助餐類】」86 筆；主食依原表指定份量，其餘類別依原表 100g 基準。
+          <a href="https://meals.ntu.edu.tw/CampusDining/kcal/buffets" target="_blank" rel="noopener">查看臺大原始熱量表</a>
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:12px;">
+        <div>
+          <label>餐別</label>
+          <select id="manualMealType">
+            <option>早餐</option>
+            <option selected>午餐</option>
+            <option>晚餐</option>
+            <option>點心</option>
+            <option>飲料</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <div>
+          <label>日期</label>
+          <input id="manualMealDate" type="date">
+        </div>
+      </div>
+
+      <div>
+        <label>輸入飲食</label>
+        <input id="manualFoodQuery" placeholder="例如：白飯 1碗、雞胸肉 120g、香蕉 1根" autocomplete="off">
+      </div>
+
+      <div class="quick-foods">
+        <button class="quick-food" type="button" data-query="白飯 1碗">白飯 1碗</button>
+        <button class="quick-food" type="button" data-query="雞胸肉 120g">雞胸肉 120g</button>
+        <button class="quick-food" type="button" data-query="水煮蛋 1顆">水煮蛋 1顆</button>
+        <button class="quick-food" type="button" data-query="無糖豆漿 240ml">無糖豆漿 240ml</button>
+        <button class="quick-food" type="button" data-query="香蕉 1根">香蕉 1根</button>
+        <button class="quick-food" type="button" data-query="蘋果 1顆">蘋果 1顆</button>
+      </div>
+
+      <div class="manual-actions">
+        <button class="btn btn-primary" id="startManualCalcBtn" type="button">▶ 開始計算熱量</button>
+        <button class="btn btn-primary" id="addManualMealBtn" type="button" disabled>加入飲食紀錄</button>
+        <button class="btn btn-ghost" id="clearManualBtn" type="button">清除</button>
+      </div>
+
+      <div id="manualCalcResult" style="display:none; margin-top:14px;">
+        <div class="manual-result-head">
+          <div>
+            <div class="manual-result-label">辨識食物</div>
+            <div class="manual-result-food" id="manualMatchedFood">—</div>
+            <div class="manual-result-portion" id="manualMatchedPortion">—</div>
+          </div>
+          <div class="manual-calorie-box">
+            <span id="manualCalcCaloriesResult">0</span>
+            <small>kcal</small>
+          </div>
+        </div>
+
+        <div class="nutrient-grid">
+          <div class="nutrient-card"><span>蛋白質</span><b id="manualProteinResult">0</b><small>g</small></div>
+          <div class="nutrient-card"><span>碳水</span><b id="manualCarbsResult">0</b><small>g</small></div>
+          <div class="nutrient-card"><span>脂肪</span><b id="manualFatResult">0</b><small>g</small></div>
+          <div class="nutrient-card"><span>膳食纖維</span><b id="manualFiberResult">0</b><small>g</small></div>
+          <div class="nutrient-card"><span>糖</span><b id="manualSugarResult">0</b><small>g</small></div>
+          <div class="nutrient-card"><span>鈉</span><b id="manualSodiumResult">0</b><small>mg</small></div>
+        </div>
+
+        <details class="all-nutrients" id="manualAllNutrientsDetails">
+          <summary>查看全部營養素</summary>
+          <div class="all-nutrients-table" id="manualAllNutrientsTable">
+            <table>
+              <thead><tr><th>營養素</th><th>含量</th><th>單位</th></tr></thead>
+              <tbody><tr><td colspan="3">尚未計算</td></tr></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <div class="status" id="manualStatus"></div>
+
+      <div class="source-note">
+        本版已加入食藥署「食品營養成分資料集」下載、ZIP/JSON 匯入與解析功能；官方資料未載入時才使用離線備援。
+        <a href="https://data.gov.tw/dataset/8543" target="_blank" rel="noopener">查看政府資料開放平臺資料集</a>。
+      </div>
+    </section>
+
+    <section class="card history">
+      <h2>5. 飲食紀錄</h2>
+      <div class="history-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>餐別</th>
+              <th>食物</th>
+              <th>熱量</th>
+              <th>蛋白質</th>
+              <th>碳水</th>
+              <th>脂肪</th>
+              <th>纖維</th>
+              <th>糖</th>
+              <th>鈉</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-danger" id="clearHistory">清除全部紀錄</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const today = new Date().toISOString().slice(0,10);
+  $("manualMealDate").value = today;
+
+  let meals = JSON.parse(localStorage.getItem("calorieMeals") || "[]");
+  let profile = JSON.parse(localStorage.getItem("calorieProfile") || "null");
+
+
+  // 衛生福利部國民健康署「每日飲食建議量」
+  const hpaDailyGuide = {
+    1200: { grains: 1.5, protein: 3, dairy: 1.5, veg: 3, fruit: 2, oil: 4 },
+    1500: { grains: 2.5, protein: 4, dairy: 1.5, veg: 3, fruit: 2, oil: 4 },
+    1800: { grains: 3,   protein: 5, dairy: 1.5, veg: 3, fruit: 2, oil: 5 },
+    2000: { grains: 3,   protein: 6, dairy: 1.5, veg: 4, fruit: 3, oil: 6 },
+    2200: { grains: 3.5, protein: 6, dairy: 1.5, veg: 4, fruit: 3.5, oil: 6 },
+    2500: { grains: 4,   protein: 7, dairy: 1.5, veg: 5, fruit: 4, oil: 7 },
+    2700: { grains: 4,   protein: 8, dairy: 2,   veg: 5, fruit: 4, oil: 8 }
+  };
+
+  function round(n) { return Math.round(Number(n) || 0); }
+
+  function closestGuideCalories(target) {
+    const levels = Object.keys(hpaDailyGuide).map(Number);
+    return levels.reduce((best, n) =>
+      Math.abs(n - target) < Math.abs(best - target) ? n : best
+    , levels[0]);
+  }
+
+  function updateGuide(calories, syncSelect = true) {
+    const level = Number(calories);
+    const g = hpaDailyGuide[level] || hpaDailyGuide[2000];
+    if (syncSelect) $("guideCalories").value = String(level);
+
+    $("guideGrains").textContent = g.grains;
+    $("guideProtein").textContent = g.protein;
+    $("guideDairy").textContent = g.dairy;
+    $("guideVeg").textContent = g.veg;
+    $("guideFruit").textContent = g.fruit;
+    $("guideOil").textContent = g.oil;
+  }
+
+  function calcProfile() {
+    const sex = $("sex").value;
+    const age = Number($("age").value);
+    const weight = Number($("weight").value);
+    const height = Number($("height").value);
+    const activity = Number($("activity").value);
+    const goal = Number($("goal").value);
+
+    let bmr = 10 * weight + 6.25 * height - 5 * age + (sex === "male" ? 5 : -161);
+    let tdee = bmr * activity;
+    let target = tdee * goal;
+
+    profile = { sex, age, weight, height, activity, goal, bmr, tdee, target };
+    localStorage.setItem("calorieProfile", JSON.stringify(profile));
+    updateProfileUI();
+  }
+
+  function updateProfileUI() {
+    if (!profile) return;
+    $("sex").value = profile.sex;
+    $("age").value = profile.age;
+    $("weight").value = profile.weight;
+    $("height").value = profile.height;
+    $("activity").value = profile.activity;
+    $("goal").value = profile.goal;
+    $("bmr").textContent = round(profile.bmr);
+    $("tdee").textContent = round(profile.tdee);
+    $("target").textContent = round(profile.target);
+    updateGuide(closestGuideCalories(Number(profile.target)));
+    updateDaySummary();
+  }
+
+  function resetProfile() {
+    localStorage.removeItem("calorieProfile");
+    $("sex").value = "male";
+    $("age").value = 30;
+    $("weight").value = 70;
+    $("height").value = 170;
+    $("activity").value = "1.55";
+    $("goal").value = "1";
+    calcProfile();
+  }
+
+  let manualCalculationReady = false;
+  let manualCalculationData = null;
+
+  const manualFoodDatabase = [{"name":"白飯","aliases":["白飯","米飯","白米飯"],"kcal":130,"protein":2.4,"carbs":28.2,"fat":0.3,"fiber":0.4,"sugar":0.1,"sodium":1,"portionG":180,"portionUnit":"碗"},{"name":"糙米飯","aliases":["糙米飯","糙米"],"kcal":112,"protein":2.3,"carbs":23.5,"fat":0.8,"fiber":1.8,"sugar":0.4,"sodium":5,"portionG":180,"portionUnit":"碗"},{"name":"燕麥","aliases":["燕麥","燕麥片"],"kcal":389,"protein":16.9,"carbs":66.3,"fat":6.9,"fiber":10.6,"sugar":0.9,"sodium":2,"portionG":40,"portionUnit":"份"},{"name":"地瓜","aliases":["地瓜","甘薯","番薯"],"kcal":86,"protein":1.6,"carbs":20.1,"fat":0.1,"fiber":3.0,"sugar":4.2,"sodium":55,"portionG":150,"portionUnit":"條"},{"name":"白吐司","aliases":["白吐司","吐司","白麵包"],"kcal":266,"protein":8.9,"carbs":49.4,"fat":3.3,"fiber":2.7,"sugar":5.0,"sodium":490,"portionG":30,"portionUnit":"片"},{"name":"熟麵條","aliases":["麵條","白麵","熟麵"],"kcal":138,"protein":4.5,"carbs":25.0,"fat":2.1,"fiber":1.2,"sugar":0.6,"sodium":5,"portionG":200,"portionUnit":"碗"},{"name":"雞胸肉","aliases":["雞胸肉","雞胸"],"kcal":165,"protein":31.0,"carbs":0,"fat":3.6,"fiber":0,"sugar":0,"sodium":74,"portionG":120,"portionUnit":"份"},{"name":"雞腿肉","aliases":["雞腿肉","雞腿"],"kcal":209,"protein":26.0,"carbs":0,"fat":10.9,"fiber":0,"sugar":0,"sodium":84,"portionG":120,"portionUnit":"份"},{"name":"豬里肌","aliases":["豬里肌","里肌肉"],"kcal":196,"protein":29.0,"carbs":0,"fat":7.5,"fiber":0,"sugar":0,"sodium":62,"portionG":100,"portionUnit":"份"},{"name":"牛肉","aliases":["牛肉","牛排","沙朗牛肉"],"kcal":206,"protein":27.0,"carbs":0,"fat":10.0,"fiber":0,"sugar":0,"sodium":60,"portionG":120,"portionUnit":"份"},{"name":"鮭魚","aliases":["鮭魚","三文魚"],"kcal":208,"protein":20.0,"carbs":0,"fat":13.0,"fiber":0,"sugar":0,"sodium":59,"portionG":120,"portionUnit":"份"},{"name":"水煮蛋","aliases":["水煮蛋","雞蛋","蛋"],"kcal":155,"protein":13.0,"carbs":1.1,"fat":11.0,"fiber":0,"sugar":1.1,"sodium":124,"portionG":50,"portionUnit":"顆"},{"name":"板豆腐","aliases":["板豆腐","豆腐"],"kcal":76,"protein":8.0,"carbs":1.9,"fat":4.8,"fiber":0.3,"sugar":0.6,"sodium":7,"portionG":100,"portionUnit":"份"},{"name":"無糖豆漿","aliases":["無糖豆漿","豆漿"],"kcal":33,"protein":2.9,"carbs":1.7,"fat":1.6,"fiber":0.4,"sugar":0.2,"sodium":33,"portionG":240,"portionUnit":"杯"},{"name":"全脂牛奶","aliases":["全脂牛奶","牛奶","鮮奶"],"kcal":61,"protein":3.2,"carbs":4.8,"fat":3.3,"fiber":0,"sugar":5.1,"sodium":43,"portionG":240,"portionUnit":"杯"},{"name":"原味優格","aliases":["原味優格","優格"],"kcal":61,"protein":3.5,"carbs":4.7,"fat":3.3,"fiber":0,"sugar":4.7,"sodium":46,"portionG":150,"portionUnit":"杯"},{"name":"花椰菜","aliases":["花椰菜","青花菜","西蘭花"],"kcal":35,"protein":2.4,"carbs":7.2,"fat":0.4,"fiber":3.3,"sugar":1.4,"sodium":41,"portionG":100,"portionUnit":"份"},{"name":"高麗菜","aliases":["高麗菜","甘藍","包心菜"],"kcal":23,"protein":1.3,"carbs":5.5,"fat":0.1,"fiber":1.9,"sugar":2.8,"sodium":8,"portionG":100,"portionUnit":"份"},{"name":"菠菜","aliases":["菠菜"],"kcal":23,"protein":3.0,"carbs":3.8,"fat":0.3,"fiber":2.4,"sugar":0.4,"sodium":70,"portionG":100,"portionUnit":"份"},{"name":"蘋果","aliases":["蘋果","苹果"],"kcal":52,"protein":0.3,"carbs":13.8,"fat":0.2,"fiber":2.4,"sugar":10.4,"sodium":1,"portionG":182,"portionUnit":"顆"},{"name":"香蕉","aliases":["香蕉"],"kcal":89,"protein":1.1,"carbs":22.8,"fat":0.3,"fiber":2.6,"sugar":12.2,"sodium":1,"portionG":118,"portionUnit":"根"},{"name":"柳橙","aliases":["柳橙","橙","橘子"],"kcal":47,"protein":0.9,"carbs":11.8,"fat":0.1,"fiber":2.4,"sugar":9.4,"sodium":0,"portionG":131,"portionUnit":"顆"},{"name":"芭樂","aliases":["芭樂","番石榴"],"kcal":68,"protein":2.6,"carbs":14.3,"fat":1.0,"fiber":5.4,"sugar":8.9,"sodium":2,"portionG":200,"portionUnit":"顆"},{"name":"酪梨","aliases":["酪梨","牛油果"],"kcal":160,"protein":2.0,"carbs":8.5,"fat":14.7,"fiber":6.7,"sugar":0.7,"sodium":7,"portionG":100,"portionUnit":"份"},{"name":"杏仁","aliases":["杏仁","杏仁果"],"kcal":579,"protein":21.2,"carbs":21.6,"fat":49.9,"fiber":12.5,"sugar":4.4,"sodium":1,"portionG":15,"portionUnit":"份"},{"name":"花生","aliases":["花生","花生仁"],"kcal":567,"protein":25.8,"carbs":16.1,"fat":49.2,"fiber":8.5,"sugar":4.7,"sodium":18,"portionG":15,"portionUnit":"份"}];
+
+  const TFDA_DATA_URL = "https://data.fda.gov.tw/opendata/exportDataList.do?method=ExportData&InfoId=20&logType=5";
+  const BUILTIN_TAIWAN_DATA_URL = "./data/taiwan_foods.json";
+  // 臺大 86 筆熱量表同步內建：即使外部 JSON 尚未載入、路徑錯誤或離線，也能立即計算。
+  const BUNDLED_NTU_FALLBACK_ROWS = [{"i":"NTU-BUF-001","n":"白飯","a":["台大白飯","臺大白飯","White rice"],"c":"臺大熱量表－主食類","d":"來源表列：1碗/200g，280 kcal；本表僅供參考，實際以現場供應為主。","w":200,"v":{"ce":140.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"1碗/200g（來源表列 280 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":280},{"i":"NTU-BUF-002","n":"粥","a":["台大粥","臺大粥","Porridge"],"c":"臺大熱量表－主食類","d":"來源表列：1碗/250g，140 kcal；本表僅供參考，實際以現場供應為主。","w":250,"v":{"ce":56.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"1碗/250g（來源表列 140 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":140},{"i":"NTU-BUF-003","n":"麵條","a":["台大麵條","臺大麵條","Noodles"],"c":"臺大熱量表－主食類","d":"來源表列：1碗/120g，140 kcal；本表僅供參考，實際以現場供應為主。","w":120,"v":{"ce":116.6667},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"1碗/120g（來源表列 140 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":140},{"i":"NTU-BUF-004","n":"饅頭","a":["台大饅頭","臺大饅頭","Steamed bun"],"c":"臺大熱量表－主食類","d":"來源表列：1碗/120g，280 kcal；本表僅供參考，實際以現場供應為主。","w":120,"v":{"ce":233.3333},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"1碗/120g（來源表列 280 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":280},{"i":"NTU-BUF-005","n":"香煎排骨","a":["台大香煎排骨","臺大香煎排骨","Pan fried pork ribs"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，250 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":250.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 250 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":250},{"i":"NTU-BUF-006","n":"鼓椒排骨","a":["台大鼓椒排骨","臺大鼓椒排骨","Black bean sauced pork ribs"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，287 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":287.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 287 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":287},{"i":"NTU-BUF-007","n":"鹽酥排骨","a":["台大鹽酥排骨","臺大鹽酥排骨","Salted pork ribs"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，255 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":255.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 255 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":255},{"i":"NTU-BUF-008","n":"糖醋排骨","a":["台大糖醋排骨","臺大糖醋排骨","Sweet and sour sauced pork ribs"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，330 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":330.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 330 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":330},{"i":"NTU-BUF-009","n":"炸豬排","a":["台大炸豬排","臺大炸豬排","Pork cutlet"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，255 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":255.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 255 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":255},{"i":"NTU-BUF-010","n":"香滷控肉","a":["台大香滷控肉","臺大香滷控肉","Marinated meat"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，270 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":270.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 270 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":270},{"i":"NTU-BUF-011","n":"蘿蔔燒肉","a":["台大蘿蔔燒肉","臺大蘿蔔燒肉","Simmered meat and radish"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，268 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":268.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 268 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":268},{"i":"NTU-BUF-012","n":"回鍋肉","a":["台大回鍋肉","臺大回鍋肉","Double cooked pork slices"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，265 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":265.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 265 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":265},{"i":"NTU-BUF-013","n":"黑胡椒肉片","a":["台大黑胡椒肉片","臺大黑胡椒肉片","Black pepper sliced meat"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，206 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":206.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 206 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":206},{"i":"NTU-BUF-014","n":"醬爆肉片","a":["台大醬爆肉片","臺大醬爆肉片","Fried sliced meat in brown sauce","台大醬爆肉片215","臺大醬爆肉片215"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，215 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":215.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 215 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":215},{"i":"NTU-BUF-015","n":"醬爆肉片","a":["台大醬爆肉片","臺大醬爆肉片","Fried sliced meat in brown sauce","台大醬爆肉片173","臺大醬爆肉片173"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，173 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":173.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 173 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":173},{"i":"NTU-BUF-016","n":"蒜泥白肉","a":["台大蒜泥白肉","臺大蒜泥白肉","Sliced pork belly with garlic sauce"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，129 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":129.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 129 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":129},{"i":"NTU-BUF-017","n":"叉燒肉","a":["台大叉燒肉","臺大叉燒肉","Char Siew"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，134 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":134.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 134 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":134},{"i":"NTU-BUF-018","n":"清蒸獅子頭","a":["台大清蒸獅子頭","臺大清蒸獅子頭","Steamed braised pork ball"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，229 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":229.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 229 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":229},{"i":"NTU-BUF-019","n":"瓜仔肉","a":["台大瓜仔肉","臺大瓜仔肉","Steamed minced pork with pickles"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，277 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":277.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 277 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":277},{"i":"NTU-BUF-020","n":"滷雞腿","a":["台大滷雞腿","臺大滷雞腿","Marinated chicken thigh"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，205 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":205.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 205 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":205},{"i":"NTU-BUF-021","n":"炸雞腿","a":["台大炸雞腿","臺大炸雞腿","Fried chicken thigh"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，255 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":255.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 255 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":255},{"i":"NTU-BUF-022","n":"烤腿排","a":["台大烤腿排","臺大烤腿排","Barbecued chicken thigh"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，215 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":215.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 215 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":215},{"i":"NTU-BUF-023","n":"花雕醉雞","a":["台大花雕醉雞","臺大花雕醉雞","Cool chicken wing with HuaDiao wine"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，283 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":283.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 283 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":283},{"i":"NTU-BUF-024","n":"黃燜雞丁","a":["台大黃燜雞丁","臺大黃燜雞丁","Braised chicken with brown sauce"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，118 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":118.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 118 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":118},{"i":"NTU-BUF-025","n":"雪菜雞片","a":["台大雪菜雞片","臺大雪菜雞片","Sliced chicken with salted cabbage"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，185 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":185.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 185 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":185},{"i":"NTU-BUF-026","n":"成都子雞","a":["台大成都子雞","臺大成都子雞","Chengdu chicken"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，161 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":161.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 161 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":161},{"i":"NTU-BUF-027","n":"小黃魚煲","a":["台大小黃魚煲","臺大小黃魚煲","Small yellow croakers pot"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，217 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":217.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 217 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":217},{"i":"NTU-BUF-028","n":"香炸白帶魚","a":["台大香炸白帶魚","臺大香炸白帶魚","Fried beltfish"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，240 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":240.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 240 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":240},{"i":"NTU-BUF-029","n":"樹子蒸午仔魚","a":["台大樹子蒸午仔魚","臺大樹子蒸午仔魚","Steamed East Asian fourfinger treadfin with zucchini"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，214 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":214.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 214 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":214},{"i":"NTU-BUF-030","n":"蔥爆鯽魚","a":["台大蔥爆鯽魚","臺大蔥爆鯽魚","Braised catfish with scallion"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，252 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":252.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 252 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":252},{"i":"NTU-BUF-031","n":"醋溜魚塊","a":["台大醋溜魚塊","臺大醋溜魚塊","Braised fish fillet in vineger"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，216 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":216.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 216 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":216},{"i":"NTU-BUF-032","n":"五味魚丁","a":["台大五味魚丁","臺大五味魚丁","Fish fillet with five tastes"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，172 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":172.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 172 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":172},{"i":"NTU-BUF-033","n":"五味軟絲","a":["台大五味軟絲","臺大五味軟絲","Cuttlefish with five tastes"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，192 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":192.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 192 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":192},{"i":"NTU-BUF-034","n":"炸花枝條","a":["台大炸花枝條","臺大炸花枝條","Fried cuttlefish fillet"],"c":"臺大熱量表－主菜類","d":"來源表列：100g，180 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":180.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 180 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":180},{"i":"NTU-BUF-035","n":"紅蘿蔔炒蛋","a":["台大紅蘿蔔炒蛋","臺大紅蘿蔔炒蛋","Scrambled Egg with Carrot"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，103 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":103.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 103 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":103},{"i":"NTU-BUF-036","n":"蕃茄炒蛋","a":["台大蕃茄炒蛋","臺大蕃茄炒蛋","Scrambled Egg with Tomato"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，123 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":123.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 123 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":123},{"i":"NTU-BUF-037","n":"四色炒蛋","a":["台大四色炒蛋","臺大四色炒蛋","Scrambled Egg with Green Pepper, Black Fungus and Ginger"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，182 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":182.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 182 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":182},{"i":"NTU-BUF-038","n":"蒸蛋","a":["台大蒸蛋","臺大蒸蛋","Steamed Egg"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，60 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":60.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 60 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":60},{"i":"NTU-BUF-039","n":"香滷豆干","a":["台大香滷豆干","臺大香滷豆干","Braised Dry Bean Curd"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，154 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":154.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 154 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":154},{"i":"NTU-BUF-040","n":"小魚豆乾","a":["台大小魚豆乾","臺大小魚豆乾","Dry Bean Curd cooked with Anchovies"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，210 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":210.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 210 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":210},{"i":"NTU-BUF-041","n":"小魚苦瓜","a":["台大小魚苦瓜","臺大小魚苦瓜","Bittergourd cooked with Anchovies"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，120 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":120.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 120 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":120},{"i":"NTU-BUF-042","n":"咖哩洋芋","a":["台大咖哩洋芋","臺大咖哩洋芋","Potato Curry"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，120 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":120.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 120 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":120},{"i":"NTU-BUF-043","n":"南瓜蓮子","a":["台大南瓜蓮子","臺大南瓜蓮子","Pumpkin cooked with Lotus Seeds"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，121 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":121.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 121 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":121},{"i":"NTU-BUF-044","n":"青椒炒培根","a":["台大青椒炒培根","臺大青椒炒培根","Green Pepper cooked with Bacon"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，166 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":166.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 166 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":166},{"i":"NTU-BUF-045","n":"小魚苦瓜","a":["台大小魚苦瓜","臺大小魚苦瓜","Bittergourd cooked with Anchovies"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，120 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":120.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 120 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":120},{"i":"NTU-BUF-046","n":"咖理洋芋","a":["台大咖理洋芋","臺大咖理洋芋","Potato Curry"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，120 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":120.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 120 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":120},{"i":"NTU-BUF-047","n":"甜椒肉片","a":["台大甜椒肉片","臺大甜椒肉片","Sweet Pepper cooked with Sliced Pork"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，102 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":102.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 102 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":102},{"i":"NTU-BUF-048","n":"炒玉米","a":["台大炒玉米","臺大炒玉米","Fried Corn"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，150 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":150.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 150 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":150},{"i":"NTU-BUF-049","n":"高麗培根","a":["台大高麗培根","臺大高麗培根","Cabbage cooked with Bacon"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，166 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":166.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 166 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":166},{"i":"NTU-BUF-050","n":"雙脆肉片","a":["台大雙脆肉片","臺大雙脆肉片","Fried Chicken Gizzard with Pork Belly"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，102 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":102.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 102 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":102},{"i":"NTU-BUF-051","n":"筊白筍炒肉絲","a":["台大筊白筍炒肉絲","臺大筊白筍炒肉絲","White Bamboo cooked with Shredded Pork"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，116 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":116.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 116 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":116},{"i":"NTU-BUF-052","n":"大白炒蝦米","a":["台大大白炒蝦米","臺大大白炒蝦米","Fried Chinese Cabbage with Shrimp"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，114 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":114.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 114 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":114},{"i":"NTU-BUF-053","n":"玉米肉絲","a":["台大玉米肉絲","臺大玉米肉絲","Fried Corn with Shredded Pork"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，137 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":137.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 137 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":137},{"i":"NTU-BUF-054","n":"麻婆豆腐","a":["台大麻婆豆腐","臺大麻婆豆腐","Mapo Tofu"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，163 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":163.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 163 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":163},{"i":"NTU-BUF-055","n":"肉羹黃瓜","a":["台大肉羹黃瓜","臺大肉羹黃瓜","Thick Pork Soup with Cucumber"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，107 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":107.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 107 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":107},{"i":"NTU-BUF-056","n":"三色豆","a":["台大三色豆","臺大三色豆","Fried Pea, Carrot and Corn"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，125 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":125.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 125 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":125},{"i":"NTU-BUF-057","n":"鹹菜豬血","a":["台大鹹菜豬血","臺大鹹菜豬血","Pickled Vegetables cooked with Blood Pudding"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，78 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":78.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 78 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":78},{"i":"NTU-BUF-058","n":"油燜苦瓜","a":["台大油燜苦瓜","臺大油燜苦瓜","Stewed Bittergourd"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，245 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":245.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 245 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":245},{"i":"NTU-BUF-059","n":"苦瓜肉片","a":["台大苦瓜肉片","臺大苦瓜肉片","Bittergourd cooked with Sliced Pork"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，96 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":96.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 96 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":96},{"i":"NTU-BUF-060","n":"拌三絲","a":["台大拌三絲","臺大拌三絲","Fried Sliced Carrot, Pork and Tofu"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，91 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":91.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 91 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":91},{"i":"NTU-BUF-061","n":"炸豆腐","a":["台大炸豆腐","臺大炸豆腐","Deep Fried Tofu"],"c":"臺大熱量表－副菜類","d":"來源表列：100g，170 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":170.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 170 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":170},{"i":"NTU-BUF-062","n":"炒高麗菜","a":["台大炒高麗菜","臺大炒高麗菜","Fried Cabbage"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，75 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":75.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 75 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":75},{"i":"NTU-BUF-063","n":"炒綠花椰","a":["台大炒綠花椰","臺大炒綠花椰","Fried Broccoli"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，66 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":66.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 66 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":66},{"i":"NTU-BUF-064","n":"炒波菜","a":["台大炒波菜","臺大炒波菜","Fried Spinach"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，77 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":77.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 77 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":77},{"i":"NTU-BUF-065","n":"海芽炒豆芽","a":["台大海芽炒豆芽","臺大海芽炒豆芽","Fried Sprouts with Kelp Buds"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，70 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":70.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 70 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":70},{"i":"NTU-BUF-066","n":"涼拌海帶絲","a":["台大涼拌海帶絲","臺大涼拌海帶絲","Seaweed Stripes Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，65 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":65.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 65 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":65},{"i":"NTU-BUF-067","n":"炒地瓜葉","a":["台大炒地瓜葉","臺大炒地瓜葉","Fried Sweet Potato Leaves"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，70 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":70.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 70 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":70},{"i":"NTU-BUF-068","n":"涼拌青花菜","a":["台大涼拌青花菜","臺大涼拌青花菜","Broccoli Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，47 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":47.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 47 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":47},{"i":"NTU-BUF-069","n":"炒空心菜","a":["台大炒空心菜","臺大炒空心菜","Fried Convolvulus"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，70 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":70.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 70 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":70},{"i":"NTU-BUF-070","n":"炒豌豆夾","a":["台大炒豌豆夾","臺大炒豌豆夾","Fried Pea Pods"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，89 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":89.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 89 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":89},{"i":"NTU-BUF-071","n":"炒韭菜花","a":["台大炒韭菜花","臺大炒韭菜花","Fried Chives Flower"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，75 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":75.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 75 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":75},{"i":"NTU-BUF-072","n":"炒菠菜","a":["台大炒菠菜","臺大炒菠菜","Fried Spinach"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，68 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":68.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 68 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":68},{"i":"NTU-BUF-073","n":"炒萵苣","a":["台大炒萵苣","臺大炒萵苣","Fried Lettuce"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，57 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":57.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 57 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":57},{"i":"NTU-BUF-074","n":"炒白菜","a":["台大炒白菜","臺大炒白菜","Fried Chinese Cabbage"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，59 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":59.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 59 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":59},{"i":"NTU-BUF-075","n":"炒青江菜","a":["台大炒青江菜","臺大炒青江菜","Friend Chinese Bok-choy"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，62 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":62.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 62 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":62},{"i":"NTU-BUF-076","n":"炒牛蒡絲","a":["台大炒牛蒡絲","臺大炒牛蒡絲","Fried Sliced Burdock"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，143 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":143.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 143 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":143},{"i":"NTU-BUF-077","n":"炒蘿蔔絲","a":["台大炒蘿蔔絲","臺大炒蘿蔔絲","Fried Sliced Carrot"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，83 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":83.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 83 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":83},{"i":"NTU-BUF-078","n":"涼拌藕片","a":["台大涼拌藕片","臺大涼拌藕片","Lotus Root Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，78 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":78.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 78 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":78},{"i":"NTU-BUF-079","n":"炒筍絲","a":["台大炒筍絲","臺大炒筍絲","Fried Sliced Bamboo"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，69 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":69.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 69 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":69},{"i":"NTU-BUF-080","n":"苜蓿芽沙拉","a":["台大苜蓿芽沙拉","臺大苜蓿芽沙拉","Alfalfa Sprouts Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，70 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":70.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 70 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":70},{"i":"NTU-BUF-081","n":"炒筊白筍","a":["台大炒筊白筍","臺大炒筊白筍","Fried White Bamboo"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，69 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":69.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 69 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":69},{"i":"NTU-BUF-082","n":"涼拌荸齊","a":["台大涼拌荸齊","臺大涼拌荸齊","Chinese Water Chestnut Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，84 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":84.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 84 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":84},{"i":"NTU-BUF-083","n":"滷蘿蔔","a":["台大滷蘿蔔","臺大滷蘿蔔","Braised Carrot"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，25 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":25.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 25 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":25},{"i":"NTU-BUF-084","n":"醃製嫩薑","a":["台大醃製嫩薑","臺大醃製嫩薑","Pickled Ginger"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，41 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":41.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 41 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":41},{"i":"NTU-BUF-085","n":"涼拌花椰沙拉","a":["台大涼拌花椰沙拉","臺大涼拌花椰沙拉","Broccoli Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，70 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":70.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 70 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":70},{"i":"NTU-BUF-086","n":"沙拉筍","a":["台大沙拉筍","臺大沙拉筍","Bamboo Salad"],"c":"臺大熱量表－青菜類","d":"來源表列：100g，77 kcal；本表僅供參考，實際以現場供應為主。","w":100,"v":{"ce":77.0},"s":"國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】","pt":"100g（來源表列 77 kcal）","u":"https://meals.ntu.edu.tw/CampusDining/kcal/buffets","rk":77}];
+  let officialFoodIndex = [];
+  let bundledNtuFoods = [];
+  let officialRowCount = 0;
+  let officialDataSourceLabel = "台灣內建食品營養資料庫（來源：衛生福利部食品藥物管理署）";
+
+  const BUILTIN_NUTRIENT_MAP = {
+    ce:["修正熱量","kcal","一般成分"], e:["熱量","kcal","一般成分"], p:["粗蛋白","g","一般成分"],
+    f:["粗脂肪","g","一般成分"], c:["總碳水化合物","g","一般成分"], fi:["膳食纖維","g","一般成分"],
+    s:["糖質總量","g","一般成分"], sf:["飽和脂肪","g","一般成分"], tf:["反式脂肪","g","一般成分"],
+    ch:["膽固醇","mg","一般成分"], na:["鈉","mg","礦物質"], k:["鉀","mg","礦物質"],
+    ca:["鈣","mg","礦物質"], ph:["磷","mg","礦物質"], mg:["鎂","mg","礦物質"], fe:["鐵","mg","礦物質"],
+    zn:["鋅","mg","礦物質"], cu:["銅","mg","礦物質"], mn:["錳","mg","礦物質"], vc:["維生素C","mg","維生素"],
+    b1:["維生素B1","mg","維生素"], b2:["維生素B2","mg","維生素"], b6:["維生素B6","mg","維生素"],
+    ni:["菸鹼素","mg","維生素"], fo:["葉酸","ug","維生素"], b12:["維生素B12","ug","維生素"],
+    vd:["維生素D總量(ug)","ug","維生素"], va:["維生素A總量(IU)","IU","維生素"], re:["視網醇當量(RE)","ug","維生素"],
+    wa:["水分","g","一般成分"], ash:["灰分","g","一般成分"]
+  };
+
+  function expandBundledTaiwanFood(row) {
+    const nutrients = Object.entries(row.v || {}).map(([key, value]) => {
+      const meta = BUILTIN_NUTRIENT_MAP[key];
+      const n = Number(value);
+      if (!meta || !Number.isFinite(n)) return null;
+      return { name: meta[0], unit: meta[1], per100: n, category: meta[2] };
+    }).filter(Boolean);
+
+    return {
+      id: String(row.i || row.n || ""),
+      name: String(row.n || "").trim(),
+      aliases: Array.isArray(row.a) ? row.a.filter(Boolean) : [],
+      category: String(row.c || "").trim(),
+      description: String(row.d || "").trim(),
+      unitWeight: row.w === null || row.w === undefined ? NaN : Number(row.w),
+      source: String(row.s || "").trim(),
+      defaultPortionText: String(row.pt || "").trim(),
+      sourceUrl: String(row.u || "").trim(),
+      nutrients
+    };
+  }
+
+  function initializeBundledNtuFallback() {
+    bundledNtuFoods = BUNDLED_NTU_FALLBACK_ROWS
+      .map(expandBundledTaiwanFood)
+      .filter(f => f.name && f.nutrients.length);
+    officialFoodIndex = [...bundledNtuFoods];
+    officialRowCount = bundledNtuFoods.length;
+    officialDataSourceLabel = "國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】（內建備援）";
+
+    if (bundledNtuFoods.length) {
+      $("officialDataChip").textContent = `臺大熱量表已就緒：${bundledNtuFoods.length} 筆｜食藥署資料載入中…`;
+      $("officialDataStatus").textContent =
+        "臺大盤菜／自助餐熱量表已可立即查詢；完整食藥署台灣食品資料正在背景載入。";
+    }
+  }
+
+  async function loadBundledTaiwanData() {
+    try {
+      const response = await fetch(BUILTIN_TAIWAN_DATA_URL, { cache: "no-cache" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      const foods = Array.isArray(payload.f) ? payload.f.map(expandBundledTaiwanFood).filter(f => f.name && f.nutrients.length) : [];
+      if (!foods.length) throw new Error("內建資料格式無法辨識");
+
+      bundledNtuFoods = foods.filter(f => f.source.includes("臺灣大學"));
+      officialFoodIndex = foods;
+      officialRowCount = foods.length;
+      officialDataSourceLabel = "台灣內建食品營養資料庫（來源：衛生福利部食品藥物管理署）";
+      const ntuCount = bundledNtuFoods.length;
+      const tfdaCount = foods.length - ntuCount;
+      $("officialDataChip").textContent = `已內建台灣資料：${foods.length.toLocaleString()} 筆（食藥署 ${tfdaCount.toLocaleString()}＋臺大 ${ntuCount.toLocaleString()}）`;
+      $("officialDataStatus").textContent =
+        `台灣食品資料庫已就緒，共 ${foods.length.toLocaleString()} 筆資料。食藥署資料提供多項營養素；臺大盤菜／自助餐熱量表提供 86 筆餐點熱量。`;
+      $("officialImportInfo").textContent = "目前使用內建台灣資料庫；上方更新功能只會更新食藥署資料，本版內建的臺大熱量表仍保留在專案檔案中。";
+    } catch (err) {
+      console.error("內建台灣資料載入失敗", err);
+      // 不清空同步內建的臺大資料；至少 86 筆臺大熱量表仍可正常計算。
+      if (!bundledNtuFoods.length) initializeBundledNtuFallback();
+      officialFoodIndex = [...bundledNtuFoods];
+      officialRowCount = bundledNtuFoods.length;
+      officialDataSourceLabel = "國立臺灣大學膳食協調委員會－熱量表【盤菜、自助餐類】（內建備援）";
+      $("officialDataChip").textContent = `臺大熱量表可用：${bundledNtuFoods.length} 筆｜食藥署內建檔載入失敗`;
+      $("officialDataStatus").textContent =
+        "完整食藥署內建資料未能載入，但臺大 86 筆盤菜／自助餐熱量表已同步內建，可直接開始計算。";
+      $("officialImportInfo").textContent = "臺大資料不依賴外部 JSON；如需食藥署完整資料，可使用上方官方更新或匯入功能。";
+    }
+  }
+
+  function tfdaField(row, name) {
+    if (!row || typeof row !== "object") return "";
+    if (Object.prototype.hasOwnProperty.call(row, name)) return row[name];
+    const key = Object.keys(row).find(k => String(k).replace(/^\uFEFF/, "").trim() === name);
+    return key ? row[key] : "";
+  }
+
+  function tfdaNumber(value) {
+    if (value === null || value === undefined) return NaN;
+    const s = String(value).trim().replace(/,/g, "");
+    if (!s || s === "-" || /^(tr|trace|nd)$/i.test(s)) return NaN;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function extractTfdaRows(parsed) {
+    if (Array.isArray(parsed)) return parsed;
+    if (!parsed || typeof parsed !== "object") return [];
+    for (const key of Object.keys(parsed)) {
+      if (Array.isArray(parsed[key])) return parsed[key];
+    }
+    return [];
+  }
+
+  function buildOfficialFoodIndex(rows, sourceLabel = "衛生福利部食品藥物管理署－食品營養成分資料集（更新資料）") {
+    const groups = new Map();
+
+    rows.forEach(row => {
+      const name = String(tfdaField(row, "樣品名稱") || "").trim();
+      if (!name) return;
+
+      const id = String(tfdaField(row, "整合編號") || name).trim();
+      const aliases = String(tfdaField(row, "俗名") || "")
+        .split(/[、,，;；/]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (!groups.has(id)) {
+        groups.set(id, {
+          id,
+          name,
+          aliases,
+          category: String(tfdaField(row, "食品分類") || "").trim(),
+          description: String(tfdaField(row, "內容物描述") || "").trim(),
+          unitWeight: NaN,
+          nutrients: []
+        });
+      }
+
+      const g = groups.get(id);
+      const uw = tfdaNumber(tfdaField(row, "每單位重"));
+      if (Number.isFinite(uw) && uw > 0) g.unitWeight = uw;
+
+      const nutrientName = String(tfdaField(row, "分析項") || "").trim();
+      const unit = String(tfdaField(row, "含量單位") || "").trim();
+      const per100 = tfdaNumber(tfdaField(row, "每100克含量"));
+
+      if (nutrientName && Number.isFinite(per100)) {
+        g.nutrients.push({
+          name: nutrientName,
+          unit,
+          per100,
+          category: String(tfdaField(row, "分析項分類") || "").trim()
+        });
+      }
+    });
+
+    const updatedTfdaFoods = Array.from(groups.values()).filter(f => f.nutrients.length);
+    officialFoodIndex = [...updatedTfdaFoods, ...bundledNtuFoods];
+    officialRowCount = rows.length;
+    officialDataSourceLabel = sourceLabel;
+
+    $("officialDataChip").textContent = `已更新食藥署：${updatedTfdaFoods.length.toLocaleString()} 種＋臺大 ${bundledNtuFoods.length.toLocaleString()} 筆`;
+    $("officialDataStatus").textContent =
+      `食藥署更新資料已就緒，共讀取 ${officialRowCount.toLocaleString()} 筆營養分析資料；臺大盤菜／自助餐 86 筆熱量資料也仍保留。`;
+  }
+
+  function normalizeOfficialSearch(value) {
+    return normalizeFoodText(value)
+      .replace(/\d+(?:\.\d+)?(?:g|ml|碗|顆|颗|根|片|杯|份|條|条|茶匙)/g, "");
+  }
+
+  function findOfficialFood(query) {
+    if (!officialFoodIndex.length) return null;
+    const q = normalizeOfficialSearch(query);
+    if (!q) return null;
+
+    const scored = [];
+    for (const food of officialFoodIndex) {
+      const names = [food.name, ...food.aliases].filter(Boolean);
+      let best = -1;
+      for (const n of names) {
+        const key = normalizeFoodText(n);
+        if (!key) continue;
+        if (key === q) best = Math.max(best, 1000 + key.length);
+        else if (q.includes(key)) best = Math.max(best, 500 + key.length);
+        else if (key.includes(q)) best = Math.max(best, 200 + q.length);
+      }
+      if (best >= 0) scored.push({ food, score: best });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.length ? scored[0].food : null;
+  }
+
+  function findOfflinePortionForName(name) {
+    const q = normalizeFoodText(name);
+    return manualFoodDatabase.find(food =>
+      food.aliases.some(alias => {
+        const k = normalizeFoodText(alias);
+        return k === q || q.includes(k) || k.includes(q);
+      })
+    ) || null;
+  }
+
+  function parseOfficialAmount(query, food) {
+    const q = normalizeFoodText(query);
+
+    let m = q.match(/(\d+(?:\.\d+)?)g/);
+    if (m) return { grams: Number(m[1]), text: `${Number(m[1])} g` };
+
+    m = q.match(/(\d+(?:\.\d+)?)ml/);
+    if (m) return { grams: Number(m[1]), text: `${Number(m[1])} ml（以 1ml≈1g 估算）` };
+
+    const unitMatch = q.match(/(\d+(?:\.\d+)?)?(碗|顆|颗|根|片|杯|份|條|条|茶匙)/);
+    if (unitMatch) {
+      const count = Number(unitMatch[1] || 1);
+      if (Number.isFinite(food.unitWeight) && food.unitWeight > 0) {
+        const grams = food.unitWeight * count;
+        return { grams, text: `${count} ${unitMatch[2]}（官方每單位重約 ${round1(food.unitWeight)} g）` };
+      }
+      const offline = findOfflinePortionForName(food.name);
+      if (offline) {
+        const grams = offline.portionG * count;
+        return { grams, text: `${count} ${unitMatch[2]}（約 ${round1(grams)} g）` };
+      }
+    }
+
+    if (Number.isFinite(food.unitWeight) && food.unitWeight > 0) {
+      if (food.defaultPortionText) return { grams: food.unitWeight, text: food.defaultPortionText };
+      return { grams: food.unitWeight, text: `1 單位（官方每單位重約 ${round1(food.unitWeight)} g）` };
+    }
+
+    const offline = findOfflinePortionForName(food.name);
+    if (offline) return { grams: offline.portionG, text: `1 ${offline.portionUnit}（約 ${offline.portionG} g）` };
+
+    return { grams: 100, text: "未輸入重量，暫以 100 g 計算" };
+  }
+
+  function officialNutrientsForAmount(food, grams) {
+    const factor = grams / 100;
+    return food.nutrients.map(n => ({
+      name: n.name,
+      unit: n.unit,
+      value: roundNutrient(n.per100 * factor),
+      per100: n.per100,
+      category: n.category
+    }));
+  }
+
+  function roundNutrient(n) {
+    const x = Number(n) || 0;
+    if (Math.abs(x) >= 100) return Math.round(x);
+    if (Math.abs(x) >= 10) return Math.round(x * 10) / 10;
+    return Math.round(x * 100) / 100;
+  }
+
+  function pickOfficialNutrient(list, patterns, preferredUnit = null) {
+    for (const pattern of patterns) {
+      const found = list.find(n => {
+        const name = String(n.name || "");
+        const unitOk = !preferredUnit || String(n.unit || "").toLowerCase() === preferredUnit.toLowerCase();
+        return unitOk && (typeof pattern === "string" ? name === pattern : pattern.test(name));
+      });
+      if (found) return Number(found.value) || 0;
+    }
+    return null;
+  }
+
+  function mapOfficialMajorNutrients(list) {
+    return {
+      calories: pickOfficialNutrient(list, ["修正熱量", "熱量", /熱量/], "kcal"),
+      protein: pickOfficialNutrient(list, ["粗蛋白", "蛋白質", /蛋白/], "g"),
+      carbs: pickOfficialNutrient(list, ["總碳水化合物", "碳水化合物", /碳水/], "g"),
+      fat: pickOfficialNutrient(list, ["粗脂肪", "脂肪", /^總脂肪$/], "g"),
+      fiber: pickOfficialNutrient(list, ["膳食纖維", /膳食纖維/], "g"),
+      sugar: pickOfficialNutrient(list, ["糖質總量", "總糖", "糖", /總糖/], "g"),
+      sodium: pickOfficialNutrient(list, ["鈉", /鈉/], "mg")
+    };
+  }
+
+  function renderAllNutrients(list, sourceLabel) {
+    const body = list
+      .filter(n => Number.isFinite(Number(n.value)))
+      .sort((a, b) => String(a.category).localeCompare(String(b.category), "zh-Hant") || String(a.name).localeCompare(String(b.name), "zh-Hant"))
+      .map(n => `<tr><td>${escapeHtml(n.name)}</td><td>${escapeHtml(n.value)}</td><td>${escapeHtml(n.unit || "")}</td></tr>`)
+      .join("");
+
+    $("manualAllNutrientsTable").innerHTML = `
+      <table>
+        <thead><tr><th>營養素</th><th>含量</th><th>單位</th></tr></thead>
+        <tbody>${body || '<tr><td colspan="3">無可顯示資料</td></tr>'}</tbody>
+      </table>
+      <div style="padding:8px 10px; font-size:11px; color:var(--muted);">資料來源：${escapeHtml(sourceLabel)}</div>
+    `;
+  }
+
+  function resetAllNutrients() {
+    $("manualAllNutrientsDetails").open = false;
+    $("manualAllNutrientsTable").innerHTML =
+      '<table><thead><tr><th>營養素</th><th>含量</th><th>單位</th></tr></thead><tbody><tr><td colspan="3">尚未計算</td></tr></tbody></table>';
+  }
+
+  async function inflateRaw(bytes) {
+    if (typeof DecompressionStream === "undefined") {
+      throw new Error("此瀏覽器不支援 ZIP 解壓縮，請先將 ZIP 解開後匯入 JSON 檔。");
+    }
+    const ds = new DecompressionStream("deflate-raw");
+    const stream = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  async function extractJsonFromZip(arrayBuffer) {
+    const bytes = new Uint8Array(arrayBuffer);
+    const view = new DataView(arrayBuffer);
+
+    let eocd = -1;
+    for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+      if (view.getUint32(i, true) === 0x06054b50) {
+        eocd = i;
+        break;
+      }
+    }
+    if (eocd < 0) throw new Error("ZIP 格式無法辨識。");
+
+    const totalEntries = view.getUint16(eocd + 10, true);
+    const centralOffset = view.getUint32(eocd + 16, true);
+    let ptr = centralOffset;
+    const decoder = new TextDecoder("utf-8");
+    let chosen = null;
+
+    for (let e = 0; e < totalEntries; e++) {
+      if (view.getUint32(ptr, true) !== 0x02014b50) break;
+      const method = view.getUint16(ptr + 10, true);
+      const compressedSize = view.getUint32(ptr + 20, true);
+      const uncompressedSize = view.getUint32(ptr + 24, true);
+      const fileNameLength = view.getUint16(ptr + 28, true);
+      const extraLength = view.getUint16(ptr + 30, true);
+      const commentLength = view.getUint16(ptr + 32, true);
+      const localOffset = view.getUint32(ptr + 42, true);
+      const name = decoder.decode(bytes.slice(ptr + 46, ptr + 46 + fileNameLength));
+
+      const entry = { method, compressedSize, uncompressedSize, localOffset, name };
+      if (!chosen || /\.json$/i.test(name)) chosen = entry;
+      if (/\.json$/i.test(name)) break;
+
+      ptr += 46 + fileNameLength + extraLength + commentLength;
+    }
+
+    if (!chosen) throw new Error("ZIP 內找不到可讀取的 JSON 檔。");
+    const lo = chosen.localOffset;
+    if (view.getUint32(lo, true) !== 0x04034b50) throw new Error("ZIP 本地檔頭無法辨識。");
+
+    const nameLen = view.getUint16(lo + 26, true);
+    const extraLen = view.getUint16(lo + 28, true);
+    const dataStart = lo + 30 + nameLen + extraLen;
+    const compressed = bytes.slice(dataStart, dataStart + chosen.compressedSize);
+
+    let output;
+    if (chosen.method === 0) output = compressed;
+    else if (chosen.method === 8) output = await inflateRaw(compressed);
+    else throw new Error(`ZIP 壓縮方式 ${chosen.method} 尚未支援。`);
+
+    return decoder.decode(output);
+  }
+
+  async function parseTfdaFileBuffer(buffer, fileName = "", sourceLabel = "衛生福利部食品藥物管理署－食品營養成分資料集（更新資料）") {
+    const bytes = new Uint8Array(buffer);
+    const isZip = /\.zip$/i.test(fileName) || (bytes[0] === 0x50 && bytes[1] === 0x4b);
+    const jsonText = isZip
+      ? await extractJsonFromZip(buffer)
+      : new TextDecoder("utf-8").decode(bytes);
+
+    const parsed = JSON.parse(jsonText.replace(/^\uFEFF/, ""));
+    const rows = extractTfdaRows(parsed);
+    if (!rows.length) throw new Error("官方資料格式中找不到資料列。");
+    buildOfficialFoodIndex(rows, sourceLabel);
+  }
+
+  async function loadTfdaOnline() {
+    const btn = $("loadTfdaOnlineBtn");
+    btn.disabled = true;
+    $("officialDataStatus").textContent = "正在讀取食藥署官方資料…";
+
+    try {
+      const response = await fetch(TFDA_DATA_URL, { mode: "cors" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const buffer = await response.arrayBuffer();
+      await parseTfdaFileBuffer(buffer, "tfda.zip", "衛生福利部食品藥物管理署－食品營養成分資料集（線上更新）");
+      $("officialImportInfo").textContent =
+        `線上載入完成｜${officialRowCount.toLocaleString()} 筆分析資料｜${officialFoodIndex.length.toLocaleString()} 種可搜尋食物`;
+    } catch (err) {
+      console.error(err);
+      $("officialDataStatus").textContent =
+        `線上更新失敗（可能是跨網域限制）。目前仍可使用已內建的台灣資料庫${officialFoodIndex.length ? `（${officialFoodIndex.length.toLocaleString()} 種食物）` : ""}，也可下載官方 ZIP 後手動匯入。`;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function importTfdaFile(file) {
+    if (!file) return;
+
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    $("officialDataStatus").textContent = `正在匯入 ${file.name}…`;
+    $("officialImportInfo").textContent = `檔案：${file.name}｜${sizeMB} MB｜解析中…`;
+
+    try {
+      const buffer = await file.arrayBuffer();
+      await parseTfdaFileBuffer(buffer, file.name, "衛生福利部食品藥物管理署－食品營養成分資料集（手動匯入）");
+
+      $("officialImportInfo").textContent =
+        `匯入完成：${file.name}｜${sizeMB} MB｜${officialRowCount.toLocaleString()} 筆分析資料｜${officialFoodIndex.length.toLocaleString()} 種可搜尋食物`;
+    } catch (err) {
+      console.error(err);
+      $("officialDataStatus").textContent = `匯入失敗：${err.message}`;
+      $("officialImportInfo").textContent = `匯入失敗：${file.name}`;
+    }
+  }
+
+
+  function setManualStatus(message, isError = false) {
+    const el = $("manualStatus");
+    el.textContent = message;
+    el.style.display = message ? "block" : "none";
+    el.classList.toggle("error", Boolean(isError));
+  }
+
+  function normalizeFoodText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/公克/g, "g")
+      .replace(/克/g, "g")
+      .replace(/毫升/g, "ml")
+      .replace(/\s+/g, "");
+  }
+
+  function matchManualFood(query) {
+    const normalized = normalizeFoodText(query);
+    let candidates = [];
+
+    manualFoodDatabase.forEach(food => {
+      food.aliases.forEach(alias => {
+        const key = normalizeFoodText(alias);
+        if (normalized.includes(key)) {
+          candidates.push({ food, score: key.length });
+        }
+      });
+    });
+
+    candidates.sort((a, b) => b.score - a.score);
+    return candidates.length ? candidates[0].food : null;
+  }
+
+  function round1(n) {
+    return Math.round((Number(n) || 0) * 10) / 10;
+  }
+
+  function parseManualAmount(query, food) {
+    const q = normalizeFoodText(query);
+
+    let match = q.match(/(\d+(?:\.\d+)?)g/);
+    if (match) {
+      const grams = Number(match[1]);
+      return { grams, text: `${grams} g` };
+    }
+
+    match = q.match(/(\d+(?:\.\d+)?)ml/);
+    if (match) {
+      const ml = Number(match[1]);
+      return { grams: ml, text: `${ml} ml` };
+    }
+
+    const unitPatterns = [
+      ["碗", "碗"], ["顆", "顆"], ["颗", "顆"], ["根", "根"],
+      ["片", "片"], ["杯", "杯"], ["份", "份"], ["條", "條"], ["条", "條"]
+    ];
+
+    for (const [rawUnit, label] of unitPatterns) {
+      const re = new RegExp("(\\d+(?:\\.\\d+)?)?" + rawUnit);
+      const m = q.match(re);
+      if (m) {
+        const count = Number(m[1] || 1);
+        const grams = food.portionG * count;
+        return { grams, text: `${count} ${label}（約 ${round1(grams)} g）` };
+      }
+    }
+
+    return {
+      grams: food.portionG,
+      text: `1 ${food.portionUnit}（約 ${food.portionG} g）`
+    };
+  }
+
+  function calculateFoodNutrients(food, grams) {
+    const factor = grams / 100;
+    return {
+      calories: round(food.kcal * factor),
+      protein: round1(food.protein * factor),
+      carbs: round1(food.carbs * factor),
+      fat: round1(food.fat * factor),
+      fiber: round1(food.fiber * factor),
+      sugar: round1(food.sugar * factor),
+      sodium: round(food.sodium * factor)
+    };
+  }
+
+  function invalidateManualCalculation() {
+    manualCalculationReady = false;
+    manualCalculationData = null;
+    $("addManualMealBtn").disabled = true;
+    $("manualCalcResult").style.display = "none";
+    if ($("manualAllNutrientsDetails")) resetAllNutrients();
+    setManualStatus("");
+  }
+
+  function startManualCalculation() {
+    const query = $("manualFoodQuery").value.trim();
+
+    if (!query) {
+      setManualStatus("請輸入食物，例如「白飯 1碗」或「雞胸肉 120g」。", true);
+      $("manualFoodQuery").focus();
+      return;
+    }
+
+    // 1) 若已載入官方資料，優先使用食藥署資料
+    const officialFood = findOfficialFood(query);
+    if (officialFood) {
+      const portion = parseOfficialAmount(query, officialFood);
+      const allNutrients = officialNutrientsForAmount(officialFood, portion.grams);
+      const major = mapOfficialMajorNutrients(allNutrients);
+
+      const matchedSource = officialFood.source || officialDataSourceLabel;
+      manualCalculationData = {
+        query,
+        source: matchedSource,
+        foodName: officialFood.name,
+        portion: portion.text,
+        grams: portion.grams,
+        allNutrients,
+        ...major
+      };
+
+      $("manualMatchedFood").textContent = officialFood.name;
+      $("manualMatchedPortion").textContent = portion.text;
+      $("manualCalcCaloriesResult").textContent = major.calories;
+      const showMajor = value => value === null || value === undefined ? "—" : value;
+      $("manualProteinResult").textContent = showMajor(major.protein);
+      $("manualCarbsResult").textContent = showMajor(major.carbs);
+      $("manualFatResult").textContent = showMajor(major.fat);
+      $("manualFiberResult").textContent = showMajor(major.fiber);
+      $("manualSugarResult").textContent = showMajor(major.sugar);
+      $("manualSodiumResult").textContent = showMajor(major.sodium);
+
+      renderAllNutrients(allNutrients, manualCalculationData.source);
+      $("manualCalcResult").style.display = "block";
+      $("addManualMealBtn").disabled = false;
+      manualCalculationReady = true;
+      setManualStatus(
+        matchedSource.includes("臺灣大學")
+          ? "已使用臺大餐飲熱量表完成計算；此來源只提供熱量，未提供的其他營養素以「—」顯示。"
+          : "已使用台灣食品營養資料庫完成計算。"
+      );
+      return;
+    }
+
+    // 2) 官方資料未載入或查無結果時，使用離線備援
+    const food = matchManualFood(query);
+
+    if (!food) {
+      invalidateManualCalculation();
+      resetAllNutrients();
+      const wantsNtu = /(?:台大|臺大)/.test(query);
+      const hint = wantsNtu
+        ? "臺大熱量表找不到這個品項。可輸入「台大香煎排骨 100g」、「台大糖醋排骨 100g」、「台大白飯 1碗」等來源表中的名稱。"
+        : officialFoodIndex.length
+          ? "官方資料與離線備援都找不到此食物，請換一個較簡短的食物名稱，或輸入克數。"
+          : "目前使用離線備援資料庫，找不到這個食物。可先載入食藥署官方資料，或嘗試白飯、雞胸肉、蛋、豆腐、豆漿、牛奶、鮭魚、香蕉等。";
+      setManualStatus(hint, true);
+      return;
+    }
+
+    const portion = parseManualAmount(query, food);
+    const nutrients = calculateFoodNutrients(food, portion.grams);
+    const offlineAll = [
+      { name:"熱量", value:nutrients.calories, unit:"kcal", category:"一般成分" },
+      { name:"蛋白質", value:nutrients.protein, unit:"g", category:"一般成分" },
+      { name:"碳水化合物", value:nutrients.carbs, unit:"g", category:"一般成分" },
+      { name:"脂肪", value:nutrients.fat, unit:"g", category:"一般成分" },
+      { name:"膳食纖維", value:nutrients.fiber, unit:"g", category:"一般成分" },
+      { name:"糖", value:nutrients.sugar, unit:"g", category:"一般成分" },
+      { name:"鈉", value:nutrients.sodium, unit:"mg", category:"礦物質" }
+    ];
+
+    manualCalculationData = {
+      query,
+      source: "離線備援食物資料庫",
+      foodName: food.name,
+      portion: portion.text,
+      grams: portion.grams,
+      allNutrients: offlineAll,
+      ...nutrients
+    };
+
+    $("manualMatchedFood").textContent = food.name;
+    $("manualMatchedPortion").textContent = portion.text;
+    $("manualCalcCaloriesResult").textContent = nutrients.calories;
+    $("manualProteinResult").textContent = nutrients.protein;
+    $("manualCarbsResult").textContent = nutrients.carbs;
+    $("manualFatResult").textContent = nutrients.fat;
+    $("manualFiberResult").textContent = nutrients.fiber;
+    $("manualSugarResult").textContent = nutrients.sugar;
+    $("manualSodiumResult").textContent = nutrients.sodium;
+
+    renderAllNutrients(offlineAll, manualCalculationData.source);
+    $("manualCalcResult").style.display = "block";
+    $("addManualMealBtn").disabled = false;
+    manualCalculationReady = true;
+    setManualStatus("已使用離線備援資料完成計算；載入官方資料可搜尋更多食物與營養素。");
+  }
+
+  function clearManualFields() {
+    $("manualFoodQuery").value = "";
+    invalidateManualCalculation();
+  }
+
+  function addManualMeal() {
+    if (!manualCalculationReady || !manualCalculationData) {
+      startManualCalculation();
+      if (!manualCalculationReady || !manualCalculationData) return;
+    }
+
+    const d = manualCalculationData;
+    const meal = {
+      id: Date.now(),
+      date: $("manualMealDate").value || today,
+      type: $("manualMealType").value,
+      foods: [{
+        name: d.foodName,
+        portion: d.portion,
+        calories: d.calories,
+        protein: d.protein,
+        carbs: d.carbs,
+        fat: d.fat,
+        fiber: d.fiber,
+        sugar: d.sugar,
+        sodium: d.sodium,
+        source: d.source || "",
+        allNutrients: d.allNutrients || []
+      }],
+      calories: d.calories,
+      protein: d.protein,
+      carbs: d.carbs,
+      fat: d.fat,
+      fiber: d.fiber,
+      sugar: d.sugar,
+      sodium: d.sodium,
+      source: d.source || "",
+      allNutrients: d.allNutrients || []
+    };
+
+    meals.unshift(meal);
+    localStorage.setItem("calorieMeals", JSON.stringify(meals));
+    renderHistory();
+    updateDaySummary();
+
+    const savedName = d.foodName;
+    const savedCalories = d.calories;
+    clearManualFields();
+    setManualStatus(`已加入：${savedName}（${savedCalories} kcal）`);
+  }
+
+  function deleteMeal(id) {
+    meals = meals.filter(m => m.id !== id);
+    localStorage.setItem("calorieMeals", JSON.stringify(meals));
+    renderHistory();
+    updateDaySummary();
+  }
+  window.deleteMeal = deleteMeal;
+
+  function renderHistory() {
+    const tbody = $("historyBody");
+    if (!meals.length) {
+      tbody.innerHTML = '<tr><td colspan="11" class="empty">尚無飲食紀錄</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = meals.map(m => `
+      <tr>
+        <td>${m.date}</td>
+        <td>${m.type}</td>
+        <td>${m.foods.map(f => escapeHtml(f.name)).join("、")}</td>
+        <td>${round(m.calories)} kcal</td>
+        <td>${m.protein == null ? "—" : round(m.protein) + " g"}</td>
+        <td>${m.carbs == null ? "—" : round(m.carbs) + " g"}</td>
+        <td>${m.fat == null ? "—" : round1(m.fat) + " g"}</td>
+        <td>${m.fiber == null ? "—" : round1(m.fiber) + " g"}</td>
+        <td>${m.sugar == null ? "—" : round1(m.sugar) + " g"}</td>
+        <td>${m.sodium == null ? "—" : round(m.sodium) + " mg"}</td>
+        <td><button class="btn btn-danger" onclick="deleteMeal(${m.id})">刪除</button></td>
+      </tr>
+    `).join("");
+  }
+
+  function updateDaySummary() {
+    const dayMeals = meals.filter(m => m.date === today);
+    const totals = dayMeals.reduce((a, m) => {
+      a.calories += Number(m.calories) || 0;
+      a.protein += Number(m.protein) || 0;
+      a.carbs += Number(m.carbs) || 0;
+      a.fat += Number(m.fat) || 0;
+      a.fiber += Number(m.fiber) || 0;
+      a.sugar += Number(m.sugar) || 0;
+      a.sodium += Number(m.sodium) || 0;
+      return a;
+    }, { calories:0, protein:0, carbs:0, fat:0, fiber:0, sugar:0, sodium:0 });
+
+    const target = profile ? Number(profile.target) : 0;
+    const remaining = target - totals.calories;
+    const pct = target ? Math.min(100, Math.max(0, totals.calories / target * 100)) : 0;
+
+    $("consumed").textContent = round(totals.calories);
+    $("remaining").textContent = round(remaining);
+    $("dayProtein").textContent = round1(totals.protein);
+    $("dayCarbs").textContent = round1(totals.carbs);
+    $("dayFat").textContent = round1(totals.fat);
+    $("dayFiber").textContent = round1(totals.fiber);
+    $("daySugar").textContent = round1(totals.sugar);
+    $("daySodium").textContent = round(totals.sodium);
+    $("mealCount").textContent = dayMeals.length;
+    $("progressBar").style.width = pct + "%";
+    $("progressText").textContent = round(pct) + "%";
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, s => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+    }[s]));
+  }
+
+  $("loadTfdaOnlineBtn").addEventListener("click", loadTfdaOnline);
+  $("tfdaFileInput").addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const ok = /\.(json|zip)$/i.test(file.name);
+    if (!ok) {
+      $("officialImportInfo").textContent = "請選擇食藥署下載的 JSON 或 ZIP 檔。";
+      return;
+    }
+
+    importTfdaFile(file);
+  });
+
+  $("manualFoodQuery").addEventListener("input", invalidateManualCalculation);
+  $("manualFoodQuery").addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      startManualCalculation();
+    }
+  });
+
+  document.querySelectorAll(".quick-food").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("manualFoodQuery").value = btn.dataset.query || "";
+      invalidateManualCalculation();
+      startManualCalculation();
+    });
+  });
+
+  $("startManualCalcBtn").addEventListener("click", startManualCalculation);
+  $("addManualMealBtn").addEventListener("click", addManualMeal);
+  $("clearManualBtn").addEventListener("click", clearManualFields);
+
+
+  $("calcBtn").addEventListener("click", calcProfile);
+  $("resetProfile").addEventListener("click", resetProfile);
+  $("guideCalories").addEventListener("change", e => updateGuide(Number(e.target.value), false));
+  $("clearHistory").addEventListener("click", () => {
+    if (confirm("確定要清除全部飲食紀錄嗎？")) {
+      meals = [];
+      localStorage.removeItem("calorieMeals");
+      renderHistory();
+      updateDaySummary();
+    }
+  });
+
+
+  initializeBundledNtuFallback();
+  loadBundledTaiwanData();
+
+  if (!profile) calcProfile();
+  else updateProfileUI();
+
+  renderHistory();
+  updateDaySummary();
+</script>
+
+<script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(err => {
+        console.warn("Service Worker registration failed:", err);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
